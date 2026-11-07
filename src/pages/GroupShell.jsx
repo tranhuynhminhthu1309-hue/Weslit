@@ -1,9 +1,10 @@
+import { randomAvatar, GroupAvatar, GROUP_ICONS, GROUP_COLORS } from '../components/Avatar'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { loadGroup } from '../lib/data'
 import { useApp, useGroup, GroupCtx } from '../lib/ctx'
 import { go } from '../lib/router'
-import { ErrorBox, Spinner, Modal, Field } from '../components/ui'
+import { ErrorBox, Spinner, Modal, Field, Icon } from '../components/ui'
 import Overview from './group/Overview'
 import EventsTab from './group/Events'
 import SettlementTab from './group/Settlement'
@@ -13,12 +14,12 @@ import ActivityTab from './group/Activity'
 import EventPage from './Event'
 
 const TABS = [
-  ['overview', 'Tổng quan', '📊'],
-  ['events', 'Sự kiện', '🍜'],
-  ['settle', 'Công nợ', '💸'],
-  ['gallery', 'Ảnh bill', '🖼️'],
-  ['members', 'Thành viên', '👥'],
-  ['activity', 'Hoạt động', '🕘'],
+  ['overview', 'Tổng quan', 'chart'],
+  ['events', 'Sự kiện', 'calendar'],
+  ['settle', 'Công nợ', 'wallet'],
+  ['gallery', 'Ảnh bill', 'image'],
+  ['members', 'Thành viên', 'users'],
+  ['activity', 'Hoạt động', 'clock'],
 ]
 
 export default function GroupShell({ route }) {
@@ -28,6 +29,7 @@ export default function GroupShell({ route }) {
   const [err, setErr] = useState(null)
   const [tab, setTab] = useState('events')
   const [claim, setClaim] = useState(false)
+  const [editGroup, setEditGroup] = useState(false)
 
   const reload = useCallback(async () => {
     try {
@@ -61,15 +63,17 @@ export default function GroupShell({ route }) {
 
   return (
     <GroupCtx.Provider value={ctx}>
-      <div className="mx-auto max-w-3xl px-4 pb-28 pt-4">
+      <div className="mx-auto w-full max-w-3xl px-4 pb-32 pt-4">
         <header className="mb-4 flex items-center gap-3">
-          <button className="rounded-full p-2 text-lg hover:bg-slate-100" onClick={() => go(route.name === 'event' ? `/g/${gid}` : '/')} aria-label="Quay lại">←</button>
+          <button className="rounded-full p-2 text-lg hover:bg-slate-100" onClick={() => go(route.name === 'event' ? `/g/${gid}` : '/')} aria-label="Quay lại"><Icon name="back" size={22} /></button>
+          <button className="shrink-0 rounded-2xl ring-offset-2 hover:ring-2 hover:ring-slate-200" onClick={() => setEditGroup(true)} aria-label="Đổi ảnh đại diện nhóm"><GroupAvatar g={data.group} size={44} /></button>
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-xl font-extrabold">{data.group.name}</h1>
             <p className="text-xs text-slate-400">{data.members.filter((m) => m.active).length} thành viên{me ? ` · bạn là ${me.name}` : ''}</p>
           </div>
         </header>
 
+        {editGroup && <GroupEdit group={data.group} onClose={() => setEditGroup(false)} onSaved={reload} />}
         <ErrorBox error={err} />
 
         {!me && (
@@ -104,7 +108,7 @@ export default function GroupShell({ route }) {
           <div className="mx-auto flex max-w-3xl">
             {TABS.map(([k, label, icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-semibold ${tab === k ? 'text-brand-600' : 'text-slate-400'}`}>
-                <span className="text-lg leading-none">{icon}</span>
+                <Icon name={icon} size={22} />
                 {label}
                 {k === 'settle' && pendingForMe > 0 && <span className="absolute right-[22%] top-1 h-2.5 w-2.5 rounded-full bg-rose-500" />}
               </button>
@@ -133,7 +137,7 @@ function ClaimModal({ onClose }) {
   }
   async function create(e) {
     e.preventDefault()
-    const { error } = await supabase.from('members').insert({ group_id: gid, name: name.trim(), user_id: user.id })
+    const { error } = await supabase.from('members').insert({ group_id: gid, name: name.trim(), user_id: user.id, avatar: randomAvatar() })
     if (error) return setErr(error)
     await reload()
     onClose()
@@ -156,6 +160,40 @@ function ClaimModal({ onClose }) {
           <input className="input" required value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
         <button className="btn-primary w-full">Thêm và liên kết</button>
+      </form>
+    </Modal>
+  )
+}
+
+function GroupEdit({ group, onClose, onSaved }) {
+  const [f, setF] = useState({ name: group.name, icon: group.icon || '🍻', color: group.color || GROUP_COLORS[0] })
+  const [err, setErr] = useState(null)
+  async function save(e) {
+    e.preventDefault()
+    const { error } = await supabase.from('groups').update({ name: f.name.trim() || group.name, icon: f.icon, color: f.color }).eq('id', group.id)
+    if (error) return setErr(error)
+    await onSaved()
+    onClose()
+  }
+  return (
+    <Modal title="Ảnh đại diện nhóm" onClose={onClose}>
+      <form onSubmit={save}>
+        <ErrorBox error={err} />
+        <div className="mb-3 flex justify-center"><GroupAvatar g={f} size={88} /></div>
+        <Field label="Tên nhóm"><input className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
+        <span className="label">Biểu tượng</span>
+        <div className="mb-3 grid grid-cols-6 gap-2">
+          {GROUP_ICONS.map((i) => (
+            <button type="button" key={i} onClick={() => setF({ ...f, icon: i })} className={`rounded-xl py-1.5 text-2xl ${f.icon === i ? 'bg-brand-50 ring-2 ring-brand-600' : 'bg-slate-50'}`}>{i}</button>
+          ))}
+        </div>
+        <span className="label">Màu nền</span>
+        <div className="mb-4 flex flex-wrap gap-2">
+          {GROUP_COLORS.map((c) => (
+            <button type="button" key={c} onClick={() => setF({ ...f, color: c })} className={`h-8 w-8 rounded-full ring-offset-2 ${f.color === c ? 'ring-2 ring-slate-800' : ''}`} style={{ background: c }} aria-label={c} />
+          ))}
+        </div>
+        <button className="btn-primary w-full">Lưu</button>
       </form>
     </Modal>
   )

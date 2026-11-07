@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { BANKS, bankName } from '../../lib/banks'
 import { logActivity, must } from '../../lib/data'
 import { useGroup } from '../../lib/ctx'
+import { AvatarArt, ANIMALS, EYES, MOUTHS, ACCS, randomAvatar } from '../../components/Avatar'
 import { Avatar, Badge, COLORS, ErrorBox, Field, Modal } from '../../components/ui'
 
 export default function MembersTab() {
@@ -63,6 +64,17 @@ export default function MembersTab() {
   )
 }
 
+const Chips = ({ label, opts, val, on }) => (
+  <div className="mb-2">
+    <span className="label">{label}</span>
+    <div className="flex flex-wrap gap-1.5">
+      {Object.entries(opts).map(([k, v]) => (
+        <button type="button" key={k} onClick={() => on(k)} className={`rounded-full border px-3 py-1 text-xs font-semibold ${val === k ? 'border-brand-600 bg-brand-50 text-brand-700' : 'border-slate-200 text-slate-600'}`}>{v}</button>
+      ))}
+    </div>
+  </div>
+)
+
 function MemberForm({ member, onClose }) {
   const { data, reload, gid, actor } = useGroup()
   const isNew = !member.id
@@ -72,13 +84,16 @@ function MemberForm({ member, onClose }) {
     bank_bin: member.bank_bin || '',
     bank_account: member.bank_account || '',
     bank_holder: member.bank_holder || '',
+    avatar: member.avatar || (member.id ? null : randomAvatar()),
   })
+  const av = f.avatar
+  const setAv = (k, v) => setF({ ...f, avatar: { ...(av || randomAvatar()), [k]: v } })
   const [err, setErr] = useState(null)
 
   async function save(e) {
     e.preventDefault()
     try {
-      const row = { name: f.name.trim(), color: f.color, bank_bin: f.bank_bin || null, bank_account: f.bank_account.trim() || null, bank_holder: f.bank_holder.trim() || null }
+      const row = { name: f.name.trim(), color: f.color, bank_bin: f.bank_bin || null, bank_account: f.bank_account.trim() || null, bank_holder: f.bank_holder.trim() || null, avatar: f.avatar }
       if (row.bank_account && !row.bank_bin) throw new Error('Chọn ngân hàng cho số tài khoản')
       if (isNew) {
         const r = must(await supabase.from('members').insert({ ...row, group_id: gid }).select().single())
@@ -99,8 +114,21 @@ function MemberForm({ member, onClose }) {
       <form onSubmit={save}>
         <ErrorBox error={err} />
         <Field label="Tên / nickname"><input className="input" required autoFocus value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
+        <div className="mb-3 rounded-2xl bg-slate-50 p-3">
+          <div className="mb-2 flex items-center gap-3">
+            {av ? <AvatarArt spec={av} color={f.color} size={72} /> : <Avatar m={{ name: f.name, color: f.color }} size={72} />}
+            <div className="flex flex-col gap-1.5">
+              <button type="button" className="btn-soft btn-sm" onClick={() => setF({ ...f, avatar: randomAvatar() })}>🎲 Ngẫu nhiên</button>
+              {av && <button type="button" className="btn-ghost btn-sm" onClick={() => setF({ ...f, avatar: null })}>Dùng chữ cái</button>}
+            </div>
+          </div>
+          <Chips label="Con vật" opts={ANIMALS} val={av?.animal} on={(v) => setAv('animal', v)} />
+          <Chips label="Mắt" opts={EYES} val={av?.eyes} on={(v) => setAv('eyes', v)} />
+          <Chips label="Miệng" opts={MOUTHS} val={av?.mouth} on={(v) => setAv('mouth', v)} />
+          <Chips label="Phụ kiện" opts={ACCS} val={av?.acc} on={(v) => setAv('acc', v)} />
+        </div>
         <div className="mb-3">
-          <span className="label">Màu đại diện</span>
+          <span className="label">Màu nền</span>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
               <button type="button" key={c} onClick={() => setF({ ...f, color: c })} className={`h-8 w-8 rounded-full ring-offset-2 ${f.color === c ? 'ring-2 ring-slate-800' : ''}`} style={{ background: c }} aria-label={c} />

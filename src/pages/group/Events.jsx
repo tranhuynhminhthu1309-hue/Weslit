@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { fmt } from '../../lib/money'
 import { go } from '../../lib/router'
 import { useGroup } from '../../lib/ctx'
-import { AvatarStack, Badge, Empty, Fab, dateTimeVN } from '../../components/ui'
+import { AvatarStack, Badge, Empty, Fab, Icon, dateTimeVN } from '../../components/ui'
 import EventForm from '../../components/EventForm'
 
 export default function EventsTab() {
@@ -42,7 +42,7 @@ export default function EventsTab() {
           })}
         </div>
       )}
-      <Fab onClick={() => setForm(true)}>＋ Tạo sự kiện</Fab>
+      <Fab onClick={() => setForm(true)}><Icon name="plus" size={18} /> Tạo sự kiện</Fab>
       {form && <EventForm onClose={() => setForm(false)} onSaved={(id) => go(`/g/${gid}/e/${id}`)} />}
     </div>
   )

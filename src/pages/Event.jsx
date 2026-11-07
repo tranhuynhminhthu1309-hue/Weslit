@@ -5,7 +5,7 @@ import { fmt } from '../lib/money'
 import { go } from '../lib/router'
 import { useGroup } from '../lib/ctx'
 import { useSignedUrls } from '../lib/useUrls'
-import { Avatar, AvatarStack, Badge, Empty, ErrorBox, Fab, dateTimeVN } from '../components/ui'
+import { Avatar, AvatarStack, Badge, Empty, ErrorBox, Fab, Icon, dateTimeVN } from '../components/ui'
 import BillForm from '../components/BillForm'
 import EventForm from '../components/EventForm'
 import ImageViewer from '../components/ImageViewer'
@@ -175,7 +175,7 @@ export default function EventPage({ eid }) {
                 {bi.length > 0 && (
                   <div className="mt-2 flex gap-2 overflow-x-auto">
                     {bi.map((i) => urls[i.path] && (
-                      <img key={i.id} src={urls[i.path]} alt="Hóa đơn" className="h-16 w-16 shrink-0 cursor-zoom-in rounded-lg object-cover" onClick={() => setViewer(urls[i.path])} />
+                      <img loading="lazy" decoding="async" key={i.id} src={urls[i.path]} alt="Hóa đơn" className="h-16 w-16 shrink-0 cursor-zoom-in rounded-lg object-cover" onClick={() => setViewer(urls[i.path])} />
                     ))}
                   </div>
                 )}
@@ -218,7 +218,7 @@ export default function EventPage({ eid }) {
         <span>Ảnh hóa đơn ({images.length})</span>
         <span>
           <input ref={fileRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={(e) => { const fl = Array.from(e.target.files); e.target.value = ''; if (fl.length) addImages(fl) }} />
-          <button className="btn-soft btn-sm normal-case" disabled={busy} onClick={() => fileRef.current.click()}>📷 Chụp / tải ảnh</button>
+          <button className="btn-soft btn-sm normal-case" disabled={busy} onClick={() => fileRef.current.click()}><Icon name="camera" size={15} /> Chụp / tải ảnh</button>
         </span>
       </h3>
       {images.length === 0 ? (
@@ -227,14 +227,14 @@ export default function EventPage({ eid }) {
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {images.map((i) => (
             <div key={i.id} className="relative aspect-square overflow-hidden rounded-xl bg-slate-100">
-              {urls[i.path] && <img src={urls[i.path]} alt="Hóa đơn" className="h-full w-full cursor-zoom-in object-cover" onClick={() => setViewer(urls[i.path])} />}
+              {urls[i.path] && <img loading="lazy" decoding="async" src={urls[i.path]} alt="Hóa đơn" className="h-full w-full cursor-zoom-in object-cover" onClick={() => setViewer(urls[i.path])} />}
               <button className="absolute right-1 top-1 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white" onClick={() => removeImage(i)} aria-label="Xóa ảnh">✕</button>
             </div>
           ))}
         </div>
       )}
 
-      {!locked && <Fab onClick={() => setBillModal({ bill: null })}>＋ Thêm bill</Fab>}
+      {!locked && <Fab onClick={() => setBillModal({ bill: null })}><Icon name="plus" size={18} /> Thêm bill</Fab>}
       {billModal && <BillForm event={ev} bill={billModal.bill} onClose={() => setBillModal(null)} />}
       {editEvent && <EventForm event={ev} onClose={() => setEditEvent(false)} />}
       {viewer && <ImageViewer src={viewer} onClose={() => setViewer(null)} />}

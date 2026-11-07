@@ -1,19 +1,29 @@
 import { useEffect } from 'react'
+import { Avatar } from './Avatar'
 
-export const COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#0ea5e9', '#8b5cf6', '#ef4444', '#14b8a6', '#f97316', '#84cc16']
+export { Avatar }
 
-export function Avatar({ m, size = 32 }) {
-  const name = m?.name || '?'
+const P = {
+  chart: 'M4 20V10m6 10V4m6 16v-7m4 7H2',
+  calendar: 'M8 3v4m8-4v4M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z',
+  wallet: 'M3 7a2 2 0 012-2h13v4M3 7v10a2 2 0 002 2h14a1 1 0 001-1v-3m-4-2h4v-4a1 1 0 00-1-1H5a2 2 0 01-2-2M17 14h.01',
+  image: 'M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm3 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm-4 8l5-5 4 4 3-3 6 6',
+  users: 'M16 19v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1m13-9a3 3 0 100-6m5 15v-1a4 4 0 00-3-3.87M9.5 10a3.5 3.5 0 100-7 3.5 3.5 0 000 7z',
+  clock: 'M12 7v5l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z',
+  back: 'M15 18l-6-6 6-6',
+  plus: 'M12 5v14M5 12h14',
+  camera: 'M4 8h3l2-3h6l2 3h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1zm8 9a4 4 0 100-8 4 4 0 000 8z',
+}
+/** Icon SVG (nét mảnh), hiển thị giống nhau trên mọi thiết bị, không phụ thuộc font emoji. */
+export function Icon({ name, size = 22, className = '' }) {
   return (
-    <span
-      className="inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white"
-      style={{ width: size, height: size, background: m?.color || '#94a3b8', fontSize: size * 0.42 }}
-      title={name}
-    >
-      {name.trim().charAt(0).toUpperCase()}
-    </span>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d={P[name]} />
+    </svg>
   )
 }
+
+export const COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#0ea5e9', '#8b5cf6', '#ef4444', '#14b8a6', '#f97316', '#84cc16']
 
 export function AvatarStack({ list, max = 5 }) {
   return (
@@ -96,14 +106,16 @@ export function ErrorBox({ error }) {
   return <div className="mb-3 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700">{error.message || String(error)}</div>
 }
 
+/** Nút nổi: luôn nằm trên thanh điều hướng và thẳng hàng với phần nội dung, cả điện thoại lẫn máy tính. */
 export function Fab({ onClick, children }) {
   return (
-    <button
-      onClick={onClick}
-      className="fixed bottom-20 right-4 z-30 flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/30 active:scale-95 sm:bottom-6"
-    >
-      {children}
-    </button>
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30">
+      <div className="mx-auto flex max-w-3xl justify-end px-4">
+        <button onClick={onClick} className="pointer-events-auto flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/30 active:scale-95">
+          {children}
+        </button>
+      </div>
+    </div>
   )
 }
 

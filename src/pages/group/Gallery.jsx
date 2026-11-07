@@ -21,7 +21,7 @@ export default function GalleryTab() {
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {data.images.filter((i) => i.event_id === e.id).map((i) => (
               <div key={i.id} className="aspect-square overflow-hidden rounded-xl bg-slate-100">
-                {urls[i.path] && <img src={urls[i.path]} alt="Hóa đơn" className="h-full w-full cursor-zoom-in object-cover" onClick={() => setViewer(urls[i.path])} />}
+                {urls[i.path] && <img loading="lazy" decoding="async" src={urls[i.path]} alt="Hóa đơn" className="h-full w-full cursor-zoom-in object-cover" onClick={() => setViewer(urls[i.path])} />}
               </div>
             ))}
           </div>

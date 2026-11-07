@@ -13,6 +13,8 @@ create table if not exists profiles (
 create table if not exists groups (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  icon text,  -- emoji đại diện nhóm
+  color text, -- màu nền ảnh đại diện nhóm
   invite_code text not null unique default substr(md5(gen_random_uuid()::text), 1, 8),
   created_by uuid references auth.users,
   created_at timestamptz not null default now()
@@ -36,6 +38,7 @@ create table if not exists members (
   bank_bin text,
   bank_account text,
   bank_holder text,
+  avatar jsonb, -- {animal, eyes, mouth, acc}
   active boolean not null default true, -- "xóa khỏi nhóm" = ẩn, vì bill cũ vẫn tham chiếu thành viên này
   created_at timestamptz not null default now()
 );

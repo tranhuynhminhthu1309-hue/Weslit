@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { logActivity, must, uploadBillImage } from '../lib/data'
 import { computeBill, fmt, parseMoney } from '../lib/money'
 import { useGroup } from '../lib/ctx'
-import { Avatar, ErrorBox, Field, Modal } from './ui'
+import { Avatar, ErrorBox, Field, Icon, Modal } from './ui'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -191,7 +191,7 @@ export default function BillForm({ event, bill, onClose }) {
               </div>
             ))}
             <button type="button" className="flex h-16 w-16 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-xs text-slate-500" onClick={() => fileRef.current.click()}>
-              <span className="text-xl">📷</span>Chụp / tải
+              <Icon name="camera" size={22} />Chụp / tải
             </button>
           </div>
         </div>

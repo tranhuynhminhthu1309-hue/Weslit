@@ -1,8 +1,9 @@
+import { GroupAvatar } from '../components/Avatar'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../lib/ctx'
 import { go } from '../lib/router'
-import { Empty, ErrorBox, Field, Modal, Spinner } from '../components/ui'
+import { Empty, ErrorBox, Field, Icon, Modal, Spinner } from '../components/ui'
 
 export default function HomePage() {
   const { user, profile, setProfile } = useApp()
@@ -13,7 +14,7 @@ export default function HomePage() {
   const [busy, setBusy] = useState(false)
 
   async function load() {
-    const { data, error } = await supabase.from('group_users').select('role, groups(id, name, invite_code, created_at)').eq('user_id', user.id)
+    const { data, error } = await supabase.from('group_users').select('role, groups(id, name, invite_code, created_at, icon, color)').eq('user_id', user.id)
     if (error) return setErr(error)
     setGroups((data || []).map((r) => ({ ...r.groups, role: r.role })).filter((g) => g.id).sort((a, b) => (a.created_at < b.created_at ? 1 : -1)))
   }
@@ -80,7 +81,7 @@ export default function HomePage() {
           <div className="space-y-3">
             {groups.map((g) => (
               <button key={g.id} onClick={() => go(`/g/${g.id}`)} className="card flex w-full items-center gap-3 p-4 text-left transition hover:shadow-md">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-xl">👥</span>
+                <GroupAvatar g={g} size={48} />
                 <span className="flex-1">
                   <span className="block font-bold">{g.name}</span>
                   <span className="text-xs text-slate-400">{g.role === 'owner' ? 'Chủ nhóm' : 'Thành viên'}</span>
